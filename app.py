@@ -1,5 +1,5 @@
 import streamlit as st
-from datetime import datetime
+import datetime
 import numpy as np
 from plotly.graph_objects import Figure
 import plotly.graph_objects as graph_objects
@@ -8,13 +8,17 @@ from plotly.subplots import make_subplots
 from weather.model import WeatherModel
 from weather.data import get_inputs_patch, get_labels_patch
 
-model_path = "model/"
-model = WeatherModel.from_pretrained(model_path)
-date = datetime(2022, 9, 30, 18)
-point = (-80.607, 28.392)  # (longitude, latitude)
-patch_size = 128
-inputs = get_inputs_patch(date, point, patch_size)
-labels = get_labels_patch(date, point, patch_size)
+# point = (-80.607, 28.392)  # (longitude, latitude)
+# patch_size = 128
+# inputs = get_inputs_patch(date, point, patch_size)
+# labels = get_labels_patch(date, point, patch_size)
+
+
+@st.cache_resource
+def load_model() -> WeatherModel:
+    print("hit")
+    model_path = "model/"
+    return WeatherModel.from_pretrained(model_path)
 
 
 def show_outputs(patch: np.ndarray) -> Figure:
@@ -66,20 +70,48 @@ def render_palette(
     return np.take(color_map, color_indices, axis=0)
 
 
-predictions = model.predict(inputs.tolist())
+def predict() -> None:
+    point = (-80.607, 28.392)  # (longitude, latitude)
+    patch_size = 128
+    inputs = get_inputs_patch(
+        datetime.datetime.combine(st.session_state.d, st.session_state.t),
+        point,
+        patch_size,
+    )
+    st.session_state.predictions = model.predict(inputs)
+
+
+model = load_model()
+
+if "d" not in st.session_state:
+    st.session_state.d = datetime.date(2022, 9, 30)
+
+if "t" not in st.session_state:
+    st.session_state.t = datetime.time(18, 0)
+
+predict()
 
 st.write(
     """
-# Weather Forecast
+# Cape Canaveral Weather Forecast
 
 ## Predictions
          """
 )
-st.plotly_chart(show_outputs(predictions))
+
+col1, col2 = st.columns(2)
+
+with col1:
+    st.date_input("Forecast Date", key="d", on_change=predict)
+with col2:
+    st.time_input("Forecast Time (UTC)", key="t", on_change=predict)
+
+if st.session_state.predictions is not None:
+    st.plotly_chart(show_outputs(st.session_state.predictions))
 
 st.write(
     """
 ## Actual
 """
 )
-st.plotly_chart(show_outputs(labels))
+# st.plotly_chart(show_outputs(labels))

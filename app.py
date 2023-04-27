@@ -8,14 +8,9 @@ from plotly.subplots import make_subplots
 from weather.model import WeatherModel
 from weather.data import get_inputs_patch, get_labels_patch
 
-# point = (-80.607, 28.392)  # (longitude, latitude)
-# patch_size = 128
-# inputs = get_inputs_patch(date, point, patch_size)
-# labels = get_labels_patch(date, point, patch_size)
-
 
 @st.cache_resource
-def load_model() -> WeatherModel:
+def load_model():
     print("hit")
     model_path = "model/"
     return WeatherModel.from_pretrained(model_path)
@@ -73,12 +68,15 @@ def render_palette(
 def predict() -> None:
     point = (-80.607, 28.392)  # (longitude, latitude)
     patch_size = 128
+    dt = datetime.datetime.combine(st.session_state.d, st.session_state.t)
     inputs = get_inputs_patch(
-        datetime.datetime.combine(st.session_state.d, st.session_state.t),
+        dt,
         point,
         patch_size,
     )
+
     st.session_state.predictions = model.predict(inputs)
+    st.session_state.labels = get_labels_patch(dt, point, patch_size)
 
 
 model = load_model()
@@ -114,4 +112,6 @@ st.write(
 ## Actual
 """
 )
-# st.plotly_chart(show_outputs(labels))
+
+if st.session_state.labels is not None:
+    st.plotly_chart(show_outputs(st.session_state.labels))

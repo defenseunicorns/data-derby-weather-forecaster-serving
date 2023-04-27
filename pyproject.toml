@@ -11,6 +11,12 @@ python = "^3.11"
 streamlit = "^1.21.0"
 streamlit-globe = "^0.2.1"
 watchdog = "^3.0.0"
+torch = "^2.0.0"
+datasets = "^2.11.0"
+transformers = "^4.28.1"
+plotly = "^5.14.1"
+google = "^3.0.0"
+earthengine-api = "^0.1.351"
 
 
 [build-system]

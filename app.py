@@ -68,7 +68,8 @@ def render_palette(
 def predict() -> None:
     point = (-80.607, 28.392)  # (longitude, latitude)
     patch_size = 128
-    dt = datetime.datetime.combine(st.session_state.d, st.session_state.t)
+    time = datetime.datetime.strptime(st.session_state.t, "%H:%M").time()
+    dt = datetime.datetime.combine(st.session_state.d, time)
     inputs = get_inputs_patch(
         dt,
         point,
@@ -85,7 +86,7 @@ if "d" not in st.session_state:
     st.session_state.d = datetime.date(2022, 9, 30)
 
 if "t" not in st.session_state:
-    st.session_state.t = datetime.time(18, 0)
+    st.session_state.t = "18:00"
 
 predict()
 
@@ -102,7 +103,7 @@ col1, col2 = st.columns(2)
 with col1:
     st.date_input("Forecast Date", key="d", on_change=predict)
 with col2:
-    st.time_input("Forecast Time (UTC)", key="t", on_change=predict)
+    st.text_input("Forecast Time (UTC)", key="t", on_change=predict)
 
 if st.session_state.predictions is not None:
     st.plotly_chart(show_outputs(st.session_state.predictions))

@@ -1,19 +1,7 @@
-import streamlit as st
-import datetime
-import numpy as np
 from plotly.graph_objects import Figure
 import plotly.graph_objects as graph_objects
 from plotly.subplots import make_subplots
-
-from weather.model import WeatherModel
-from weather.data import get_inputs_patch, get_labels_patch
-
-
-@st.cache_resource
-def load_model():
-    print("hit")
-    model_path = "model/"
-    return WeatherModel.from_pretrained(model_path)
+import numpy as np
 
 
 def show_outputs(patch: np.ndarray) -> Figure:
@@ -65,20 +53,6 @@ def render_palette(
     return np.take(color_map, color_indices, axis=0)
 
 
-def predict() -> None:
-    point = (-80.607, 28.392)  # (longitude, latitude)
-    patch_size = 128
-    time = datetime.datetime.strptime(st.session_state.t, "%H:%M").time()
-    dt = datetime.datetime.combine(st.session_state.d, time)
-    st.session_state.i = get_inputs_patch(
-        dt,
-        point,
-        patch_size,
-    )
-
-    st.session_state.predictions = model.predict(st.session_state.i)
-    st.session_state.labels = get_labels_patch(dt, point, patch_size)
-
 def show_inputs(patch: np.ndarray) -> Figure:
     fig = make_subplots(rows=2, cols=4)
     fig.add_trace(graph_objects.Image(z=render_gpm(patch[:, :, 0:1])), row=1, col=1)
@@ -97,12 +71,14 @@ def show_inputs(patch: np.ndarray) -> Figure:
     fig.update_layout(height=500, margin=dict(l=0, r=0, b=0, t=0))
     return fig
 
+
 def render_goes16(patch: np.ndarray) -> np.ndarray:
     red = patch[:, :, 1]  # CMI_C02
     green = patch[:, :, 2]  # CMI_C03
     blue = patch[:, :, 0]  # CMI_C01
     rgb_patch = np.stack([red, green, blue], axis=-1)
     return render_rgb_images(rgb_patch, max=3000)
+
 
 def render_rgb_images(
     values: np.ndarray, min: float = 0.0, max: float = 1.0
@@ -133,56 +109,3 @@ def render_elevation(patch: np.ndarray) -> np.ndarray:
         "ffffff",  # White
     ]
     return render_palette(patch[:, :, 0], palette, max=3000)
-
-
-
-model = load_model()
-input_type = st.sidebar.radio("custom time input", options=["custom time input", "scrub one", "scurb two", "hurricane ian"])
-
-
-st.write("# Cape Canaveral Weather Forecast")
-
-if "predictions" in st.session_state:
-    if st.checkbox("Show Raw Data"):
-        st.subheader("Input Images")
-        st.plotly_chart(show_inputs(st.session_state.i))
-
-if "d" not in st.session_state:
-    st.session_state.d = datetime.date(2022, 9, 30)
-
-if "t" not in st.session_state:
-    st.session_state.t = "18:00"
-
-
-match input_type:
-    case "custom time input":
-        col1, col2 = st.columns(2)
-        with col1:
-            st.date_input("Forecast Date", key="d")
-        with col2:
-            st.text_input("Forecast Time (UTC)", key="t")
-
-        st.button("Predict Weather", on_click=predict)
-    case "scrub one":
-        st.session_state.d = datetime.date(2022, 9, 30)
-        st.session_state.t = "18:00"
-        predict()
-
-
-
-st.write(
-    """
-## Predictions
-         """
-)
-if "predictions" in st.session_state:
-    st.plotly_chart(show_outputs(st.session_state.predictions))
-    
-st.write(
-    """
-## Actual
-"""
-)
-
-if "labels" in st.session_state:
-    st.plotly_chart(show_outputs(st.session_state.labels))

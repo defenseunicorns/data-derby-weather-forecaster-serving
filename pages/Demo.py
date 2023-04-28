@@ -1,15 +1,23 @@
 import streamlit as st
 import datetime
+from dataclasses import dataclass
 from weather.data import get_inputs_patch, get_labels_patch
 from weather.model import WeatherModel
 from visualize import show_inputs, show_outputs
 from launch import Launch
 
+@dataclass
+class Model:
+    name: str
+    model: WeatherModel
 
 @st.cache_resource
-def load_model():
-    model_path = "model/"
-    return WeatherModel.from_pretrained(model_path)
+def load_models():
+    models = {
+        "26_100_epochs_tropics": Model(name="2/6 100 Epochs, Tropics", model=WeatherModel.from_pretrained("models/26_100_epochs_tropics")),
+    }
+    
+    return models
 
 
 def predict() -> None:
@@ -23,7 +31,7 @@ def predict() -> None:
         patch_size,
     )
 
-    st.session_state.predictions = model.predict(st.session_state.i)
+    st.session_state.predictions = models[st.session_state.model_name].model.predict(st.session_state.i)
     st.session_state.labels = get_labels_patch(dt, point, patch_size)
 
 
@@ -50,12 +58,21 @@ launches = {
 def format_launch(id):
     return "Custom Time" if id == "customtime" else launches[id].name
 
+def format_model(id):
+    print(models)
+    return models[id].name
 
-model = load_model()
-st.sidebar.radio(
+
+models = load_models()
+st.session_state.model_name = "26_100_epochs_tropics"
+
+print(list(models.keys()))
+st.sidebar.selectbox("Model", key="model_name", options=list(models.keys()), format_func=format_model)
+
+st.sidebar.selectbox(
     "Launch to Predict",
     key="input_type",
-    options=["customtime", "crew2demo", "starlink12"],
+    options=["customtime"] + list(launches.keys()),
     format_func=format_launch,
     on_change=reset,
 )

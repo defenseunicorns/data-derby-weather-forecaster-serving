@@ -5,6 +5,14 @@ import numpy as np
 st.markdown("""
 # Cape Canaveral Wx Forecasting
 
+## Team
+
+### 🚀 Rocketing 🌈 Rainbow 🛡️ Defenders
+
+* Gerred Dillon, 🤖🦄
+* Jon Perry, 🤖🦄
+
+
 ## Objective
 
 SLD45 and Cape Canaveral is growing to support 200+ launches per year. Weather violations are the primary cause of launch cancellations. Better identification and forecasting of weather will enable better planning and more launches.
@@ -51,18 +59,23 @@ Initially, we chose a representative set of weather tiles based on a random samp
 Later, we re-trained the model based on a large tropical zone around Canaveral, covering both an inference area and an additional context area. Additionally, we adjusted the elevation map to be representative of the relatively lower elevations in this area (as compared to the greater Americas), and increased the sample of days to 1460 days.
 """)
 
+col1, col2 = st.columns(2)
+
 america_points = [(-140.0, 60.0), (-140.0, -60.0), (-10.0, -60.0), (-10.0, 60.0)]
 orig_df = pd.DataFrame(
     america_points,
     columns=['lon', 'lat'])
-st.map(orig_df, zoom=1)     
+with col1:
+    st.map(orig_df, zoom=1)     
 
 
 tropics_points = [(36, -90), (18, -90), (18, -70), (36, -70)]
 new_df = pd.DataFrame(
     tropics_points,
     columns=['lat', 'lon'])
-st.map(new_df, zoom=2)
+
+with col2:
+    st.map(new_df, zoom=2)
      
 st.markdown("""
 ## Training
@@ -77,14 +90,19 @@ Additionally, the use of TorchViz and Weights and Biases would be useful additio
 
 ## Conclusion / Demo / Lessons Learned
 
-## TODO:
+We believe this shows the potential for using Foundational Models with fine tuning for supporting the 45th Weather Squadron in better predicting weather violations. For future hackathons and work, we believe the following will be valuable for AI/ML at SLD45 and Cape Canaveral:
 
-* Talk about other models
-    * MetNet / MetNet-2
-    * Microsoft ClimaX
-* Talk about data
-    * Launch data
-* Talk about model used
-* Lessons Learned / Future Work
-    * Model Evaluation / Metrics
+* More data, and more data types will enhance the ability to train and fine tune models
+* Data simulation endpoints for more sensitive or time-series data
+* Open source Foundational Models with LoRA (Low Rank Adaptation) for inexpensive, quick fine-tuning of foundational models
+    * Shift to Transformer based models
+* Small (1-13B) parameter Foundational Models trained exclusively on Mission Data
+* Integration of small and large LLMs / other Foundational Models with small, specific models and fine tuned models
+* Use of agents and LLMs for creating LLM goal-seeking task systems
+* Tooling for evaluation of model performance
+* Multi-modal model usage with both LLMs, anomaly detection, and sensor reading will have a significant impact on achieving SLD45's goals
+
+## Other Notes
+
+* We originally started with working with maintenance log data, and created a small model for determining maintenance time based on part ID and other factors. However, this model had only a few examples for each class, and so accuracy was hard to determine.
 """)

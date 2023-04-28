@@ -14,6 +14,8 @@ class Model:
 @st.cache_resource
 def load_models():
     models = {
+        "26_5_epochs_tropics": Model(name="2/6 1000 Epochs, Americas", model=WeatherModel.from_pretrained("models/26_1000_epochs_americas")),
+        "26_100_epochs_americas": Model(name="2/6 100 Epochs, Americas", model=WeatherModel.from_pretrained("models/26_100_epochs_americas")),
         "26_100_epochs_tropics": Model(name="2/6 100 Epochs, Tropics", model=WeatherModel.from_pretrained("models/26_100_epochs_tropics")),
     }
     
@@ -48,6 +50,8 @@ def reset():
 if "input_type" not in st.session_state:
     st.session_state.input_type = "customtime"
 
+if "model_name" not in st.session_state:
+    st.session_state.model_name = "26_100_epochs_tropics"
 
 launches = {
     "crew2demo": Launch(name="Crew 2 Demo", date=datetime.date(2020, 9, 30)),
@@ -64,7 +68,6 @@ def format_model(id):
 
 
 models = load_models()
-st.session_state.model_name = "26_100_epochs_tropics"
 
 print(list(models.keys()))
 st.sidebar.selectbox("Model", key="model_name", options=list(models.keys()), format_func=format_model)

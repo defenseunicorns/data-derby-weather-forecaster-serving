@@ -105,4 +105,5 @@ We believe this shows the potential for using Foundational Models with fine tuni
 ## Other Notes
 
 * We originally started with working with maintenance log data, and created a small model for determining maintenance time based on part ID and other factors. However, this model had only a few examples for each class, and so accuracy was hard to determine.
+* Tile fetching is SLOW. The inference runs very quickly, most of the time is spent in fetching data. Local tile servers can help with this.
 """)

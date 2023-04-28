@@ -1,3 +1,5 @@
+# Adapted from https://github.com/GoogleCloudPlatform/python-docs-samples/tree/main/people-and-planet-ai/weather-forecasting
+
 from plotly.graph_objects import Figure
 import plotly.graph_objects as graph_objects
 from plotly.subplots import make_subplots

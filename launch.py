@@ -6,3 +6,4 @@ from datetime import date
 class Launch:
     name: str
     date: date
+    time: str = "18:80"

@@ -41,9 +41,12 @@ def reset():
     if st.session_state.input_type == "customtime":
         st.session_state.d = datetime.date(2022, 9, 30)
         st.session_state.t = "18:00"
+        del st.session_state["predictions"]
+        del st.session_state["i"]
+        del st.session_state["labels"]
     else:
         st.session_state.d = launches[st.session_state.input_type].date
-        st.session_state.t = "18:00"
+        st.session_state.t = launches[st.session_state.input_type].time if launches[st.session_state.input_type].time else "18:00"
         predict()
 
 
@@ -54,8 +57,10 @@ if "model_name" not in st.session_state:
     st.session_state.model_name = "26_100_epochs_tropics"
 
 launches = {
-    "crew2demo": Launch(name="Crew 2 Demo", date=datetime.date(2020, 9, 30)),
-    "starlink12": Launch(name="Falcon 9 Starlink-12", date=datetime.date(2020, 5, 10)),
+    "crew2demo": Launch(name="Crew 2 Demo", date=datetime.date(2020, 9, 30), time="18:00"),
+    "starlink12": Launch(name="Falcon 9 Starlink-12", date=datetime.date(2020, 5, 10), time="18:00"),
+    "crs19": Launch(name="Falcon 9 CRS-19", date=datetime.date(2019, 4, 19), time="18:00"),
+    "nrol52": Launch(name="ATLAS V NROL-52", date=datetime.date(2017, 10, 14), time="7:31"),
 }
 
 
@@ -70,7 +75,7 @@ def format_model(id):
 models = load_models()
 
 print(list(models.keys()))
-st.sidebar.selectbox("Model", key="model_name", options=list(models.keys()), format_func=format_model)
+st.sidebar.selectbox("Model", key="model_name", options=list(models.keys()), format_func=format_model, on_change=reset)
 
 st.sidebar.selectbox(
     "Launch to Predict",

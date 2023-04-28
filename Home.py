@@ -1,4 +1,6 @@
 import streamlit as st
+import pandas as pd
+import numpy as np
 
 st.markdown("""
 # Cape Canaveral Wx Forecasting
@@ -47,7 +49,22 @@ We opted to go with a MetNet-2 style CNN, with a single convolutional layer for 
 Initially, we chose a representative set of weather tiles based on a random sampling of 100 days across the past 7 years, over an even distribution of elevations and coordinates for an area covering the Americas. With this test, we were able to produce a training model with labeled tiles for times around predictions spanning -4, -2, 0, +2, and +6 hours.
 
 Later, we re-trained the model based on a large tropical zone around Canaveral, covering both an inference area and an additional context area. Additionally, we adjusted the elevation map to be representative of the relatively lower elevations in this area (as compared to the greater Americas), and increased the sample of days to 1460 days.
+""")
 
+america_points = [(-140.0, 60.0), (-140.0, -60.0), (-10.0, -60.0), (-10.0, 60.0)]
+orig_df = pd.DataFrame(
+    america_points,
+    columns=['lon', 'lat'])
+st.map(orig_df, zoom=1)     
+
+
+tropics_points = [(36, -90), (18, -90), (18, -70), (36, -70)]
+new_df = pd.DataFrame(
+    tropics_points,
+    columns=['lat', 'lon'])
+st.map(new_df, zoom=2)
+     
+st.markdown("""
 ## Training
 
 Data sets were then put through a CNN with a single convolution layer that is passed into a fully connected layer. Data was initially trained on 5 epochs, followed by 100 epochs for each data set.
